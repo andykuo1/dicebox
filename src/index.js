@@ -38,33 +38,35 @@ function init()
     initThree();
     initCannon();
 
+    const diceMaterial = new CANNON.Material();
     Entity('dice',
         new THREE.BoxGeometry(1, 1, 1),
         createDiceMaterial([1, 2, 3, 4, 5, 6]),
         new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
-        { mass: 1 })
+        { mass: 1, material: diceMaterial })
         .on('create', function() {
             this.body.angularDamping = 0.5;
             this.body.position.set(0, 0, 5);
             applyRandomForce(this);
         })
-        .on('update', function() {
-        })
         .create(SCENE, WORLD);
-
+    
+    const boundaryMaterial = new CANNON.Material();
     const boundaryGeometry = new THREE.PlaneGeometry(10, 10, 2, 2);
+    const boundaryShape = new CANNON.Plane();
+    const boundaryOpts = { mass: 0, material: boundaryMaterial };
     Entity('ground',
         boundaryGeometry,
         undefined,
-        new CANNON.Plane(),
-        { mass: 0 })
+        boundaryShape,
+        boundaryOpts)
         .create(SCENE, WORLD);
 
     Entity('boundary-bottom',
         boundaryGeometry,
         undefined,
-        new CANNON.Plane(),
-        { mass: 0 })
+        boundaryShape,
+        boundaryOpts)
         .on('create', function() {
             this.body.position.set(0, -5, 0);
             this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
@@ -74,8 +76,8 @@ function init()
     Entity('boundary-top',
         boundaryGeometry,
         undefined,
-        new CANNON.Plane(),
-        { mass: 0 })
+        boundaryShape,
+        boundaryOpts)
         .on('create', function() {
             this.body.position.set(0, 5, 0);
             this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2);
@@ -85,8 +87,8 @@ function init()
     Entity('boundary-left',
         boundaryGeometry,
         undefined,
-        new CANNON.Plane(),
-        { mass: 0 })
+        boundaryShape,
+        boundaryOpts)
         .on('create', function() {
             this.body.position.set(-5, 0, 0);
             this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), Math.PI / 2);
@@ -96,16 +98,19 @@ function init()
     Entity('boundary-right',
         boundaryGeometry,
         undefined,
-        new CANNON.Plane(),
-        { mass: 0 })
+        boundaryShape,
+        boundaryOpts)
         .on('create', function() {
             this.body.position.set(5, 0, 0);
             this.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
         })
         .create(SCENE, WORLD);
     
+    const diceBoundaryMaterial = new CANNON.ContactMaterial(boundaryMaterial, diceMaterial, { friction: 0.0, restitution: 1.0 });
+    WORLD.addContactMaterial(diceBoundaryMaterial);
+
     const dice = getEntityByName('dice');
-    rollToFace(dice, 3);
+    rollToFace(dice, Math.floor(Math.random() * 6));
 }
 
 function animate()
