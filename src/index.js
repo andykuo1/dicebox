@@ -1,5 +1,7 @@
 import { Entity, getEntityByName, updateEntities, getEntities } from './Entity.js';
 import Random from './Random.js';
+import { D4, D6, D8, D10, D12, D20 } from './Dice.js';
+const DICE = D6;
 
 const TIME_STEP = 1 / 60;
 var TICKS = 0;
@@ -16,8 +18,8 @@ function initThree()
 {
     SCENE = new THREE.Scene();
 
-    CAMERA = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-    CAMERA.position.z = 10;
+    CAMERA = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100);
+    CAMERA.position.z = 20;
     SCENE.add(CAMERA);
 
     RENDERER = new THREE.WebGLRenderer();
@@ -39,12 +41,15 @@ function init()
     initCannon();
 
     const diceMaterial = new CANNON.Material();
-    Entity('dice',
-        new THREE.BoxGeometry(1, 1, 1),
-        createDiceMaterial([1, 2, 3, 4, 5, 6]),
-        new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)),
-        { mass: 1, material: diceMaterial })
+    Entity('dice', DICE.geometry,
+        DICE.material,
+        DICE.shape,
+        {
+            mass: 1,
+            shapeMaterial: diceMaterial
+        })
         .on('create', function() {
+            this.invertUp = DICE.invertUp;
             this.body.angularDamping = 0.5;
             this.body.position.set(0, 0, 5);
             applyRandomForce(this);
@@ -106,11 +111,13 @@ function init()
         })
         .create(SCENE, WORLD);
     
-    const diceBoundaryMaterial = new CANNON.ContactMaterial(boundaryMaterial, diceMaterial, { friction: 0.0, restitution: 1.0 });
+    const diceBoundaryMaterial = new CANNON.ContactMaterial(boundaryMaterial, diceMaterial, { friction: 0.0, restitution: 0.0 });
+    const diceDiceMaterial = new CANNON.ContactMaterial(boundaryMaterial, diceMaterial, { friction: 0.0, restitution: 0.5 });
     WORLD.addContactMaterial(diceBoundaryMaterial);
+    WORLD.addContactMaterial(diceDiceMaterial);
 
     const dice = getEntityByName('dice');
-    rollToFace(dice, Math.floor(Math.random() * 6));
+    rollToFace(dice, Math.floor(Math.random() * DICE.faceCount));
 }
 
 function animate()
@@ -159,53 +166,10 @@ function rollToFace(entity, faceValue)
     console.log(`Rolling ${faceValue}...`);
     const seed = Math.floor(Math.random() * 2147483647);
     const predictedFaceValue = roll(entity, seed);
-    changeDiceFaces(entity, predictedFaceValue, faceValue);
+    DICE.changeFaces(entity, predictedFaceValue, faceValue);
     TICKS = 0;
     RANDOM.setSeed(seed);
     resetDice(entity);
-}
-
-function changeDiceFaces(entity, currentFaceValue, targetFaceValue)
-{
-    const newGeometry = entity.geometry.clone();
-    const newFaces = newGeometry.faces;
-    const currentFaceIndex = currentFaceValue * 2;
-    const targetFaceIndex = targetFaceValue * 2;
-    const currentMaterialIndex = newFaces[currentFaceIndex].materialIndex;
-    const targetMaterialIndex = newFaces[targetFaceIndex].materialIndex;
-    newFaces[currentFaceIndex].materialIndex = newFaces[currentFaceIndex + 1].materialIndex = targetMaterialIndex;
-    newFaces[targetFaceIndex].materialIndex = newFaces[targetFaceIndex + 1].materialIndex = currentMaterialIndex;
-    entity.mesh.geometry = newGeometry;
-}
-
-function createDiceMaterial(faceLabels)
-{
-    const result = [];
-    for(let i = 0; i < faceLabels.length; ++i)
-    {
-        const label = faceLabels[i];
-        const canvasElement = document.createElement('canvas');
-        const canvasContext = canvasElement.getContext('2d');
-        const size = 32;
-        canvasElement.width = canvasElement.height = size;
-        // Draw background
-        canvasContext.fillStyle = 'black';
-        canvasContext.fillRect(0, 0, canvasElement.width, canvasElement.height);
-        // Draw label
-        canvasContext.font = '24px monospace';
-        canvasContext.textAlign = 'center';
-        canvasContext.textBaseline = 'middle';
-        canvasContext.fillStyle = 'white';
-        canvasContext.fillText(label, canvasElement.width / 2, canvasElement.height / 2);
-        // Add the little dot to distinguish 6 or 9.
-        if (label === 6 || label == 9) {
-            canvasContext.fillText(' .', canvasElement.width / 2, canvasElement.height / 2);
-        }
-        const texture = new THREE.Texture(canvasElement);
-        texture.needsUpdate = true;
-        result.push(new THREE.MeshBasicMaterial({ map: texture }))
-    }
-    return result;
 }
 
 function applyRandomForce(entity)
@@ -217,14 +181,17 @@ function applyRandomForce(entity)
     entity.body.velocity = new CANNON.Vec3(dx, dy, dz);
 }
 
-function getNumberFace(entity)
+function getNumberFace(entity, invertUp = false)
 {
-    const normalVector = new THREE.Vector3(0, 0, 1);
-    let closestFace, closestRadians = Math.PI * 2;
+    const targetVector = new THREE.Vector3(0, 0, entity.invertUp ? -1 : 1);
+    let closestFace;
+    let closestRadians = Math.PI * 2;
     for(let i = 0, length = entity.geometry.faces.length; i < length; ++i)
     {
         const face = entity.geometry.faces[i];
-        const radians = face.normal.clone().applyQuaternion(entity.body.quaternion).angleTo(normalVector);
+        if (face.materialIndex === 0) continue;
+        
+        const radians = face.normal.clone().applyQuaternion(entity.body.quaternion).angleTo(targetVector);
         if (radians < closestRadians)
         {
             closestRadians = radians;
@@ -232,8 +199,7 @@ function getNumberFace(entity)
         }
     }
 
-    let closestMaterialIndex = closestFace.materialIndex;
-    return closestMaterialIndex;
+    return closestFace.materialIndex - 1;
 }
 
 function isStopped(entity)

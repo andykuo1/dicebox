@@ -10,14 +10,14 @@ export function Entity(name, geometry, material, shape, opts = {})
 
     // Create new entity object...
     const newEntity = {
+        ...opts,
         scene: null,
         world: null,
         geometry,
         material,
         shape,
-        opts,
         mesh: new THREE.Mesh(geometry, material),
-        body: new CANNON.Body({ mass: opts.mass || 0, shape }),
+        body: new CANNON.Body({ mass: opts.mass || 0, material: opts.shapeMaterial, shape }),
         _eventListeners: new Map(),
         _eventCache: [],
         _useCache: false,
