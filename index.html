@@ -5,12 +5,22 @@
 		<title>DiceBox</title>
 		<style>
 			body { margin: 0; }
-			canvas { width: 100%; height: 100% }
+			canvas { width: 100%; height: 100%; }
+            div#container {
+                position: absolute;
+                padding-top: 2rem;
+                border: 1px solid black;
+                width: 20rem;
+                height: 20rem;
+            }
 		</style>
         <script src="lib/three.min.js"></script>
         <script src="lib/cannon.min.js"></script>
     </head>
     <body>
         <script type="module" src="./src/index.js"></script>
+        <div id="container">
+            <canvas></canvas>
+        </div>
     </body>
 </html>
