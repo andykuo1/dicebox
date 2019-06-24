@@ -48,7 +48,7 @@ class DiceBox
             const outcomeValues = this._outcome;
             for(const die of dice)
             {
-                outcomeValues.push(Math.floor(Math.random() * die.diceType.faceCount));
+                outcomeValues.push(Math.floor(Math.random() * die.diceType.faceCount) + 1);
             }
 
             console.log(`Rolling ${outcomeValues.join('+')}...`);
@@ -72,10 +72,7 @@ class DiceBox
             }
             
             // Result from die rolls
-            for (const die of dice)
-            {
-                predictedValues.push(getUpFace(die, die.diceType === D4));
-            }
+            this.getCurrentDiceOutcome(predictedValues);
 
             // Then change the roll to match the generated outcome...
             for (let i = 0; i < dice.length; ++i)
@@ -83,7 +80,8 @@ class DiceBox
                 const die = dice[i];
                 const outcomeValue = outcomeValues[i];
                 const predictedValue = predictedValues[i];
-                die.diceType.changeFaces(die, predictedValue, outcomeValue);
+                // Get the face index (which starts from 0) of the values...
+                die.diceType.changeFaces(die, predictedValue - 1, outcomeValue - 1);
             }
 
             // Restart simulation at the beginning again...
@@ -161,10 +159,7 @@ class DiceBox
         if (this._outcome.length <= 0)
         {
             // Result from die rolls
-            for (const die of this._dice)
-            {
-                this._outcome.push(getUpFace(die, die.diceType === D4));
-            }
+            this.getCurrentDiceOutcome(this._outcome);
         }
 
         const title = document.querySelector('#title');
@@ -200,9 +195,19 @@ class DiceBox
         for (const outcome of this._outcome)
         {
             // Outcomes contain face indices, which start from 0.
-            result += outcome + 1;
+            result += outcome;
         }
         return result;
+    }
+
+    getCurrentDiceOutcome(dst = [])
+    {
+        // Result from die rolls
+        for (const die of this._dice)
+        {
+            dst.push(getUpFace(die, die.diceType === D4) + 1);
+        }
+        return dst;
     }
 
     addDice(...diceTypes)
@@ -517,7 +522,7 @@ function renderScene()
 
 function isStopped(entity)
 {
-    const thresholdSq = 0.05;
+    const thresholdSq = 0.01;
     const angularVelocity = entity.body.angularVelocity;
     const velocity = entity.body.velocity;
 
@@ -528,7 +533,7 @@ function isStopped(entity)
         {
             entity._stopTicks = TICKS;
         }
-        else if (TICKS - entity._stopTicks > 20)
+        else if (TICKS - entity._stopTicks > 10)
         {
             return true;
         }
