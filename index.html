@@ -4,14 +4,128 @@
         <meta charset=utf-8>
 		<title>DiceBox</title>
 		<style>
-			body { margin: 0; }
-			canvas { width: 100%; height: 100%; }
-            div#container {
+			html, body { margin: 0; padding: 0; }
+            #container {
                 position: absolute;
-                padding-top: 2rem;
                 border: 1px solid black;
+                padding: 1rem;
+                padding-top: 2rem;
+                border-radius: 1rem;
+                overflow: hidden;
+
+                font-family: monospace;
+            }
+            header {
+                position: absolute;
+                top: 0;
+                left: 1rem;
+                width: calc(100% - 2rem);
+                font-size: 2rem;
+            }
+            header > button {
+                width: 1.5rem;
+                height: 1.5rem;
+                background: none;
+                outline: none;
+                cursor: pointer;
+                float: right;
+                border: none;
+                margin-top: 0.25rem;
+                border-radius: 50%;
+                text-align: center;
+                color: lightgray;
+            }
+            header > button:hover {
+                border: 1px solid lightgray;
+                color: black;
+            }
+            .content {
+                display: flex;
+                flex-direction: row;
+                cursor: pointer;
+            }
+			canvas {
                 width: 20rem;
                 height: 20rem;
+            }
+            nav {
+                flex: 1;
+                margin-left: 0.5rem;
+                display: none;
+            }
+            nav.show {
+                display: block;
+            }
+            .dice-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                outline: 1px solid lightgray;
+            }
+            .dice-list li {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+
+                border-radius: 1rem;
+                border-width: 1px;
+                border-style: solid;
+                border-color: #EEE;
+                overflow: hidden;
+            }
+            .dice-list li button {
+                outline: none;
+                border: none;
+                background: none;
+                cursor: pointer;
+            }
+            .dice-list li button:hover {
+                background: #EEE;
+            }
+            .dice-list .sub, .dice-list .clear {
+                color: lightgray;
+            }
+            .dice-list .sub:hover, .dice-list .clear:hover {
+                color: black;
+            }
+
+            .dice-list .add {
+                flex: 1;
+                font-weight: bold;
+                font-size: 1rem;
+            }
+            .dice-list .add * {
+                pointer-events: none;
+            }
+            .dice-list .add .amount {
+                font-weight: normal;
+                pointer-events: none;
+            }
+            .dice-list li .add {
+                flex: 1;
+                font-weight: bold;
+                font-size: 1rem;
+            }
+            .dice-list .dice-options {
+                flex: 1;
+                display: flex;
+                flex-direction: row;
+                background: white;
+                margin: 0.1rem 0;
+                overflow: hidden;
+            }
+            .dice-list .dice-options:hover {
+                border-color: #EEE;
+            }
+            #roll-button {
+                position: sticky;
+                bottom: 1rem;
+                margin: 0 1rem;
+
+                font-size: 2rem;
+                font-family: monospace;
+                background: white;
+                border-radius: 2rem;
             }
 		</style>
         <script src="lib/three.min.js"></script>
@@ -20,7 +134,68 @@
     <body>
         <script type="module" src="./src/index.js"></script>
         <div id="container">
-            <canvas></canvas>
+            <header>
+                <label id="title">20</label>
+                <button id="option-button">#</button>
+            </header>
+            <div class="content">
+                <canvas width="20rem" height="20rem"></canvas>
+                <nav>
+                    <article id="menu-content">
+                        <ul class="dice-list">
+                            <li id="d4">
+                                <button class="sub">-</button>
+                                <button class="add">
+                                    <label class="amount"></label>
+                                    <label class="name">D4</label>
+                                </button>
+                                <button class="clear">x</button>
+                            </li>
+                            <li id="d6">
+                                <button class="sub">-</button>
+                                <button class="add">
+                                    <label class="amount"></label>
+                                    <label class="name">D6</label>
+                                </button>
+                                <button class="clear">x</button>
+                            </li>
+                            <li id="d8">
+                                <button class="sub">-</button>
+                                <button class="add">
+                                    <label class="amount"></label>
+                                    <label class="name">D8</label>
+                                </button>
+                                <button class="clear">x</button>
+                            </li>
+                            <li id="d10">
+                                <button class="sub">-</button>
+                                <button class="add">
+                                    <label class="amount"></label>
+                                    <label class="name">D10</label>
+                                </button>
+                                <button class="clear">x</button>
+                            </li>
+                            <li id="d12">
+                                <button class="sub">-</button>
+                                <button class="add">
+                                    <label class="amount"></label>
+                                    <label class="name">D12</label>
+                                </button>
+                                <button class="clear">x</button>
+                            </li>
+                            <li id="d20">
+                                <button class="sub">-</button>
+                                <button class="add">
+                                    <label class="amount"></label>
+                                    <label class="name">D20</label>
+                                </button>
+                                <button class="clear">x</button>
+                            </li>
+                        </ul>
+                        <button id="roll-button">Roll</button>
+                    </article>
+                </article>
+            </nav>
         </div>
     </body>
 </html>
