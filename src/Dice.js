@@ -74,7 +74,7 @@ function createTexture(text, size, margin)
     let context = canvas.getContext("2d");
     let textureSize = calculateTextureSize(size / 2 + size * margin) * 2;
     canvas.width = canvas.height = textureSize;
-    context.font = textureSize / (1 + 2 * margin) + "pt Arial";
+    context.font = textureSize / (1 + 2 * margin) + "pt monospace";
     context.fillStyle = background;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.textAlign = "center";

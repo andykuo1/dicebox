@@ -94,8 +94,25 @@ class DiceBox
             // Just run it normally...
             this.prepare(RANDOM, seed);
         }
-
+        
         this.onDiceThrow();
+
+        // Just to make sure everything looks okay first...
+        renderScene();
+
+        // Now run it.
+        return this.run();
+    }
+
+    continue()
+    {
+        if (this._locked) return;
+
+        this._stopped = false;
+        this._outcome.length = 0;
+
+        // Lock any changes...
+        this._locked = true;
 
         // Just to make sure everything looks okay first...
         renderScene();
@@ -132,7 +149,6 @@ class DiceBox
 
     stop()
     {
-        this.reset();
         this._stopped = true;
         this._locked = false;
     }
@@ -423,12 +439,7 @@ function registerDiceButton(diceType, diceID)
             document.querySelector(`#${diceID} .clear`).disabled = false;
         }
         document.querySelector(`#${diceID} .amount`).textContent = count || '';
-
-        if (registerDiceButton._timeout) clearTimeout(registerDiceButton._timeout);
-        registerDiceButton._timeout = setTimeout(() => {
-            registerDiceButton._timeout = null;
-            DICE_BOX.start(true);
-        }, 1000);
+        DICE_BOX.continue();
     });
     document.querySelector(`#${diceID} .sub`).addEventListener('click', (e) => {
         DICE_BOX.stop();
@@ -440,12 +451,7 @@ function registerDiceButton(diceType, diceID)
             document.querySelector(`#${diceID} .clear`).disabled = true;
         }
         document.querySelector(`#${diceID} .amount`).textContent = count || '';
-
-        if (registerDiceButton._timeout) clearTimeout(registerDiceButton._timeout);
-        registerDiceButton._timeout = setTimeout(() => {
-            registerDiceButton._timeout = null;
-            DICE_BOX.start(true);
-        }, 1000);
+        DICE_BOX.continue();
     });
     document.querySelector(`#${diceID} .clear`).addEventListener('click', (e) => {
         DICE_BOX.stop();
@@ -453,12 +459,7 @@ function registerDiceButton(diceType, diceID)
         document.querySelector(`#${diceID} .sub`).disabled = true;
         document.querySelector(`#${diceID} .clear`).disabled = true;
         document.querySelector(`#${diceID} .amount`).textContent = '';
-
-        if (registerDiceButton._timeout) clearTimeout(registerDiceButton._timeout);
-        registerDiceButton._timeout = setTimeout(() => {
-            registerDiceButton._timeout = null;
-            DICE_BOX.start(true);
-        }, 1000);
+        DICE_BOX.continue();
     });
 }
 registerDiceButton._timeout = null;
@@ -522,7 +523,7 @@ function renderScene()
 
 function isStopped(entity)
 {
-    const thresholdSq = 0.01;
+    const thresholdSq = 0.04;
     const angularVelocity = entity.body.angularVelocity;
     const velocity = entity.body.velocity;
 
