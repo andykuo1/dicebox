@@ -170,9 +170,7 @@ class DiceBox
         const title = document.querySelector('#title');
         if (this._outcome.length > 0)
         {
-            const totalValue = this._outcome.reduce((prev, value) => {
-                return prev + value;
-            });
+            const totalValue = this.getTotalDiceValue();
             title.textContent = totalValue;
         }
         else
@@ -193,6 +191,18 @@ class DiceBox
                 0);
             applyRandomForce(rand, die);
         }
+    }
+    
+    getTotalDiceValue()
+    {
+        // Result from die rolls
+        let result = 0;
+        for (const outcome of this._outcome)
+        {
+            // Outcomes contain face indices, which start from 0.
+            result += outcome + 1;
+        }
+        return result;
     }
 
     addDice(...diceTypes)
@@ -518,7 +528,7 @@ function isStopped(entity)
         {
             entity._stopTicks = TICKS;
         }
-        else if (TICKS - entity._stopTicks > 10)
+        else if (TICKS - entity._stopTicks > 20)
         {
             return true;
         }
@@ -549,7 +559,7 @@ function getUpFace(entity, invertUpFace)
         }
     }
 
-    return closestFace.materialIndex - 1;
+    return closestFace.materialIndex - 1 - 1;
 }
 
 function applyRandomForce(rand, entity)
