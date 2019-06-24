@@ -123,7 +123,7 @@ class Dice
 
     changeFaces(entity, fromFaceIndex, toFaceIndex)
     {
-        const geometry = entity.geometry.clone();
+        const geometry = this.geometry.clone();
 
         for (let i = 0, l = geometry.faces.length; i < l; ++i) {
             let materialIndex = geometry.faces[i].materialIndex;
