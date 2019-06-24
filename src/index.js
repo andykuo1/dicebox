@@ -51,6 +51,8 @@ class DiceBox
                 outcomeValues.push(Math.floor(Math.random() * die.diceType.faceCount));
             }
 
+            console.log(`Rolling ${outcomeValues.join('+')}...`);
+
             // Restart simulation at the beginning...
             this.prepare(RANDOM, seed);
             
